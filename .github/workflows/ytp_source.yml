@@ -133,6 +133,29 @@ jobs:
             cd $THEOS/include && git clone --quiet --depth=1 https://github.com/PoomSmart/PSHeader.git
           fi
 
+      - name: Patch source for sideload build (no roothide)
+        run: |
+          cat > Utils/NSBundle+YTLite.h <<'EOF'
+          #import <Foundation/Foundation.h>
+
+          #if __has_include(<roothide.h>)
+          #import <roothide.h>
+          #else
+          #define jbroot(path) (path)
+          #endif
+
+          NS_ASSUME_NONNULL_BEGIN
+
+          @interface NSBundle (YTLite)
+
+          // Returns YTLite default bundle. Supports rootless/roothide if available.
+          @property (class, nonatomic, readonly) NSBundle *ytl_defaultBundle;
+
+          @end
+
+          NS_ASSUME_NONNULL_END
+          EOF
+
       # ---------- Build YTLite from forked sources ----------
       - name: Build YTLite from source
         run: |
