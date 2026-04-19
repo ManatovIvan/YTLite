@@ -156,6 +156,19 @@ jobs:
           NS_ASSUME_NONNULL_END
           EOF
 
+      - name: Setup relative-path source dependencies
+        run: |
+          # YTLite sources import "../YouTubeHeader/..." and "../protobuf/objectivec/..."
+          # These paths are relative to the repo root, so deps must live one level up.
+
+          # 1. YouTubeHeader — symlink to the copy already in $THEOS/include
+          ln -sfn "$THEOS/include/YouTubeHeader" ../YouTubeHeader
+
+          # 2. protobuf — needed by YTNativeShare.x (headers only, no linking required)
+          if [ ! -d ../protobuf ]; then
+            git clone --quiet --depth=1 https://github.com/protocolbuffers/protobuf.git ../protobuf
+          fi
+
       # ---------- Build YTLite from forked sources ----------
       - name: Build YTLite from source
         run: |
